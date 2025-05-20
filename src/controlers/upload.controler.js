@@ -1,18 +1,19 @@
-// upload.controler.js
 import admin from "firebase-admin";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-
-if (!serviceAccount) {
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
   throw new Error("FIREBASE_SERVICE_ACCOUNT environment variable is not set");
 }
 
+// Firebase service accountni to'g'ri parse qilish va private_key dagi \n ni yangi qatorga almashtirish
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(JSON.parse(serviceAccount)),
+    credential: admin.credential.cert(serviceAccount),
     storageBucket: "cyber-shop-uz.firebasestorage.app",
   });
 }
@@ -30,7 +31,7 @@ const uploadFile = async (req, res) => {
   const blob = bucket.file(fileName);
   const blobStream = blob.createWriteStream({
     metadata: { contentType: file.mimetype },
-    public: true, // Make the file publicly accessible
+    public: true,
   });
 
   blobStream.on("error", (err) => {
@@ -40,10 +41,8 @@ const uploadFile = async (req, res) => {
 
   blobStream.on("finish", async () => {
     try {
-      await blob.makePublic(); // Ensure the file is public
-      const fileUrl = `https://storage.googleapis.com/${
-        bucket.name
-      }/${encodeURIComponent(fileName)}`;
+      await blob.makePublic();
+      const fileUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(fileName)}`;
       res.json({ message: "File uploaded successfully!", url: fileUrl });
     } catch (err) {
       console.error("Error making file public:", err);
