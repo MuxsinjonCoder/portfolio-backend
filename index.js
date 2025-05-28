@@ -12,7 +12,7 @@ import uploadRoute from "./src/routes/upload.route.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Swagger sozlamalari
 const swaggerOptions = {
@@ -43,7 +43,12 @@ app.use("/api/auth", registerRoute);
 app.use("/api/posts", postsRoute);
 app.use("/api/upload", uploadRoute);
 
-app.listen(PORT, () => {
+// app.listen(PORT, () => {
+//   connectDB();
+//   console.log("server started at http://localhost:" + PORT);
+// });
+
+app.listen(PORT, "0.0.0.0", () => {
   connectDB();
-  console.log("server started at http://localhost:" + PORT);
+  console.log("server started at http://0.0.0.0:" + PORT);
 });
